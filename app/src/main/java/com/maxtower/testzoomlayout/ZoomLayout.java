@@ -144,13 +144,9 @@ public class ZoomLayout extends ViewGroup
             }
 
         }
-        if(gestureDetected)
-        {
-            matrix.postTranslate(distanceX, distanceY);
-            matrix.invert(matrixInverse);
-            savedMatrix.set(matrix);
-            invalidate();
-        }
+        matrix.invert(matrixInverse);
+        savedMatrix.set(matrix);
+        invalidate();
         return gestureDetected;
     }
 
@@ -212,6 +208,7 @@ public class ZoomLayout extends ViewGroup
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float dX, float dY)
         {
             setupTranslation(dX, dY);
+            matrix.postTranslate(distanceX, distanceY);
             return true;
         }
 
@@ -260,6 +257,34 @@ public class ZoomLayout extends ViewGroup
             float totX = values[Matrix.MTRANS_X] + distanceX;
             float totY = values[Matrix.MTRANS_Y] + distanceY;
             float sx = values[Matrix.MSCALE_X];
+
+            Rect viewableRect = new Rect();
+            ZoomLayout.this.getDrawingRect(viewableRect);
+            float offscreenWidth = contentSize.width() - (viewableRect.right - viewableRect.left);
+            float offscreenHeight = contentSize.height() - (viewableRect.bottom - viewableRect.top);
+            float maxDx = (contentSize.width() - (contentSize.width() / sx)) / 2 * sx;
+            float maxDy = (contentSize.height() - (contentSize.height() / sx)) / 2 * sx;
+            Log.i("NZL", offscreenWidth + "," + offscreenHeight + "  " + maxDx + "," + maxDy + "  " + totX + "," + totY);
+
+            if (totX > 0 && distanceX > 0)
+            {
+                distanceX = 0;
+            }
+            if (totY > 0 && distanceY > 0)
+            {
+                distanceY = 0;
+            }
+
+        }
+
+/*
+        if (contentSize != null)
+        {
+            float[] values = new float[9];
+            matrix.getValues(values);
+            float totX = values[Matrix.MTRANS_X] + distanceX;
+            float totY = values[Matrix.MTRANS_Y] + distanceY;
+            float sx = values[Matrix.MSCALE_X];
             Rect viewableRect = new Rect();
             ZoomLayout.this.getDrawingRect(viewableRect);
             float offscreenWidth = contentSize.width() - (viewableRect.right - viewableRect.left);
@@ -289,6 +314,7 @@ public class ZoomLayout extends ViewGroup
                 // distanceY = 0;
             }
         }
+        */
 
 
     }
