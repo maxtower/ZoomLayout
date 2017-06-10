@@ -21,7 +21,7 @@ import android.view.ViewGroup;
  */
 
 public class ZoomLayout extends ViewGroup
-    {
+{
 
     private ScaleGestureDetector mScaleGestureDetector;
     private GestureDetectorCompat mGestureDetector;
@@ -50,65 +50,64 @@ public class ZoomLayout extends ViewGroup
 
 
     public ZoomLayout(Context context)
-        {
+    {
         super(context);
         init(context);
-        }
+    }
 
     public ZoomLayout(Context context, AttributeSet attrs)
-        {
+    {
         super(context, attrs);
         init(context);
-        }
+    }
 
     public ZoomLayout(Context context, AttributeSet attrs, int defStyleAttr)
-        {
+    {
         super(context, attrs, defStyleAttr);
         init(context);
-        }
+    }
 
 
     private void init(Context context)
-        {
+    {
         mScaleGestureDetector = new ScaleGestureDetector(context, mScaleGestureListener);
         mGestureDetector = new GestureDetectorCompat(context, mGestureListener);
-        }
-
+    }
 
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom)
-        {
+    {
         int childCount = getChildCount();
         for (int i = 0; i < childCount; i++)
-            {
+        {
             View child = getChildAt(i);
             if (child.getVisibility() != GONE)
-                {
+            {
                 child.layout(left, top, left + child.getMeasuredWidth(), top + child.getMeasuredHeight());
-                }
             }
         }
+    }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
-        {
+    {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         int childCount = getChildCount();
         for (int i = 0; i < childCount; i++)
-            {
+        {
             View child = getChildAt(i);
             if (child.getVisibility() != GONE)
-                {
+            {
                 measureChild(child, widthMeasureSpec, heightMeasureSpec);
-                }
             }
         }
+    }
 
     @Override
     protected void dispatchDraw(Canvas canvas)
-        {
+    {
         float[] values = new float[9];
         matrix.getValues(values);
         canvas.save();
@@ -118,45 +117,49 @@ public class ZoomLayout extends ViewGroup
         canvas.scale(values[Matrix.MSCALE_X], values[Matrix.MSCALE_Y]);
         super.dispatchDraw(canvas);
         canvas.restore();
-        }
+    }
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev)
-        {
+    {
         //mDispatchTouchEventWorkingArray[0] = ev.getX();
         //mDispatchTouchEventWorkingArray[1] = ev.getY();
         //mDispatchTouchEventWorkingArray = screenPointsToScaledPoints(mDispatchTouchEventWorkingArray);
         //ev.setLocation(mDispatchTouchEventWorkingArray[0], mDispatchTouchEventWorkingArray[1]);
         return super.dispatchTouchEvent(ev);
-        }
+    }
 
     @Override
     public boolean onTouchEvent(MotionEvent event)
-        {
+    {
+
         matrix.set(savedMatrix);
-        boolean retVal = mGestureDetector.onTouchEvent(event);
-        if(event.getPointerCount() > 1)
+        boolean gestureDetected = mGestureDetector.onTouchEvent(event);
+        if (event.getPointerCount() > 1)
+        {
+            gestureDetected = mScaleGestureDetector.onTouchEvent(event) | gestureDetected;
+            if (checkScaleBounds())
             {
-            retVal = mScaleGestureDetector.onTouchEvent(event) | retVal;
-            if(checkScaleBounds())
-                {
                 matrix.postScale(scale, scale, mid.x, mid.y);
-                }
-
             }
-        matrix.postTranslate(distanceX, distanceY);
-        matrix.invert(matrixInverse);
-        savedMatrix.set(matrix);
-        invalidate();
-        return retVal;
-        }
 
-        /**
-         * The scale listener, used for handling multi-finger scale gestures.
-         */
+        }
+        if(gestureDetected)
+        {
+            matrix.postTranslate(distanceX, distanceY);
+            matrix.invert(matrixInverse);
+            savedMatrix.set(matrix);
+            invalidate();
+        }
+        return gestureDetected;
+    }
+
+    /**
+     * The scale listener, used for handling multi-finger scale gestures.
+     */
     private final ScaleGestureDetector.OnScaleGestureListener mScaleGestureListener
             = new ScaleGestureDetector.SimpleOnScaleGestureListener()
-        {
+    {
         /**
          * This is the active focal point in terms of the viewport. Could be a local
          * variable but kept here to minimize per-frame allocations.
@@ -164,29 +167,29 @@ public class ZoomLayout extends ViewGroup
 
         @Override
         public boolean onScaleBegin(ScaleGestureDetector scaleGestureDetector)
-            {
+        {
             oldDist = scaleGestureDetector.getCurrentSpan();
             if (oldDist > 10f)
-                {
+            {
                 savedMatrix.set(matrix);
                 mid.set(scaleGestureDetector.getFocusX(), scaleGestureDetector.getFocusY());
-                }
-            return true;
             }
+            return true;
+        }
 
         @Override
         public void onScaleEnd(ScaleGestureDetector detector)
-            {
+        {
 
-            }
+        }
 
         @Override
         public boolean onScale(ScaleGestureDetector scaleGestureDetector)
-            {
+        {
             scale = scaleGestureDetector.getScaleFactor();
             return true;
-            }
-        };
+        }
+    };
 
     /**
      * The gesture listener, used for handling simple gestures such as double touches, scrolls,
@@ -194,64 +197,64 @@ public class ZoomLayout extends ViewGroup
      */
     private final GestureDetector.SimpleOnGestureListener mGestureListener
             = new GestureDetector.SimpleOnGestureListener()
-        {
+    {
         @Override
         public boolean onDown(MotionEvent event)
-            {
+        {
             savedMatrix.set(matrix);
 
             start.set(event.getX(), event.getY());
 
             return true;
-            }
+        }
 
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float dX, float dY)
-            {
+        {
             setupTranslation(dX, dY);
             return true;
-            }
+        }
 
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY)
-            {
+        {
             //fling((int) -velocityX, (int) -velocityY);
             return true;
-            }
-        };
+        }
+    };
 
     private boolean checkScaleBounds()
-        {
+    {
         float[] values = new float[9];
         matrix.getValues(values);
         float sx = values[Matrix.MSCALE_X] * scale;
         float sy = values[Matrix.MSCALE_Y] * scale;
-        if(sx > MIN_ZOOM && sx < MAX_ZOOM && sy > MIN_ZOOM && sy < MAX_ZOOM)
-            {
+        if (sx > MIN_ZOOM && sx < MAX_ZOOM && sy > MIN_ZOOM && sy < MAX_ZOOM)
+        {
             return true;
-            }
-        return false;
         }
+        return false;
+    }
 
     private float[] scaledPointsToScreenPoints(float[] a)
-        {
+    {
         matrix.mapPoints(a);
         return a;
-        }
+    }
 
     private float[] screenPointsToScaledPoints(float[] a)
-        {
+    {
         matrixInverse.mapPoints(a);
         return a;
-        }
+    }
 
     private void setupTranslation(float dX, float dY)
-        {
+    {
         distanceX = -1 * dX;
         distanceY = -1 * dY;
 
-        if(contentSize != null)
-            {
+        if (contentSize != null)
+        {
             float[] values = new float[9];
             matrix.getValues(values);
             float totX = values[Matrix.MTRANS_X] + distanceX;
@@ -264,35 +267,35 @@ public class ZoomLayout extends ViewGroup
             float maxDx = (contentSize.width() - (contentSize.width() / sx)) / 2 * sx;
             float maxDy = (contentSize.height() - (contentSize.height() / sx)) / 2 * sx;
 
-            Log.i("NZL", offscreenWidth + "," + offscreenHeight + "  " + maxDx + "," + maxDy + "  " + totX + "," + totY);
+            //Log.i("NZL", offscreenWidth + "," + offscreenHeight + "  " + maxDx + "," + maxDy + "  " + totX + "," + totY);
 
-            if(totX > 0 && distanceX > 0)
-                {
+            if (totX > 0 && distanceX > 0)
+            {
                 distanceX = 0;
-                }
-            if(totY > 0 && distanceY > 0)
-                {
+            }
+            if (totY > 0 && distanceY > 0)
+            {
                 distanceY = 0;
-                }
+            }
 
             //totX = Math.min(Math.max(totX, -(maxDx + offscreenWidth)), maxDx);
             //totY = Math.min(Math.max(totY, -(maxDy + offscreenHeight)), maxDy);
-            if(((int)totX) - ((int)values[Matrix.MTRANS_X] + distanceX) != 0)
-                {
-               // distanceX = 0;
-                }
-            if(((int)totY) - ((int)values[Matrix.MTRANS_Y] + distanceY) != 0)
-                {
-               // distanceY = 0;
-                }
+            if (((int) totX) - ((int) values[Matrix.MTRANS_X] + distanceX) != 0)
+            {
+                // distanceX = 0;
             }
-
-
+            if (((int) totY) - ((int) values[Matrix.MTRANS_Y] + distanceY) != 0)
+            {
+                // distanceY = 0;
+            }
         }
 
-    public void setContentSize(float width, float height)
-        {
-        this.contentSize = new RectF(0, 0, width, height);
-        }
 
     }
+
+    public void setContentSize(float width, float height)
+    {
+        this.contentSize = new RectF(0, 0, width, height);
+    }
+
+}
