@@ -111,8 +111,6 @@ public class ZoomLayout extends ViewGroup
         float[] values = new float[9];
         matrix.getValues(values);
         canvas.save();
-        //Log.i("MATRIX", values[Matrix.MTRANS_X] + "," + values[Matrix.MTRANS_Y] + " " +
-        //        values[Matrix.MSCALE_X] + "," + values[Matrix.MSCALE_Y] );
         canvas.translate(values[Matrix.MTRANS_X], values[Matrix.MTRANS_Y]);
         canvas.scale(values[Matrix.MSCALE_X], values[Matrix.MSCALE_Y]);
         super.dispatchDraw(canvas);
@@ -264,8 +262,6 @@ public class ZoomLayout extends ViewGroup
             float offscreenHeight = contentSize.height() - (viewableRect.bottom - viewableRect.top);
             float maxDx = (contentSize.width() - (contentSize.width() / sx)) * sx;
             float maxDy = (contentSize.height() - (contentSize.height() / sx)) * sx;
-            Log.i("NZL", viewableRect.right + "," + "  " + maxDx + "," + "  " + totX + "," + " " + sx);
-
             if (totX > 0 && distanceX > 0)
             {
                 distanceX = 0;
@@ -285,47 +281,6 @@ public class ZoomLayout extends ViewGroup
             }
 
         }
-
-/*
-        if (contentSize != null)
-        {
-            float[] values = new float[9];
-            matrix.getValues(values);
-            float totX = values[Matrix.MTRANS_X] + distanceX;
-            float totY = values[Matrix.MTRANS_Y] + distanceY;
-            float sx = values[Matrix.MSCALE_X];
-            Rect viewableRect = new Rect();
-            ZoomLayout.this.getDrawingRect(viewableRect);
-            float offscreenWidth = contentSize.width() - (viewableRect.right - viewableRect.left);
-            float offscreenHeight = contentSize.height() - (viewableRect.bottom - viewableRect.top);
-            float maxDx = (contentSize.width() - (contentSize.width() / sx)) / 2 * sx;
-            float maxDy = (contentSize.height() - (contentSize.height() / sx)) / 2 * sx;
-
-            //Log.i("NZL", offscreenWidth + "," + offscreenHeight + "  " + maxDx + "," + maxDy + "  " + totX + "," + totY);
-
-            if (totX > 0 && distanceX > 0)
-            {
-                distanceX = 0;
-            }
-            if (totY > 0 && distanceY > 0)
-            {
-                distanceY = 0;
-            }
-
-            //totX = Math.min(Math.max(totX, -(maxDx + offscreenWidth)), maxDx);
-            //totY = Math.min(Math.max(totY, -(maxDy + offscreenHeight)), maxDy);
-            if (((int) totX) - ((int) values[Matrix.MTRANS_X] + distanceX) != 0)
-            {
-                // distanceX = 0;
-            }
-            if (((int) totY) - ((int) values[Matrix.MTRANS_Y] + distanceY) != 0)
-            {
-                // distanceY = 0;
-            }
-        }
-        */
-
-
     }
 
     public void setContentSize(float width, float height)
