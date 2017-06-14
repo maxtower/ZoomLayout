@@ -262,15 +262,24 @@ public class ZoomLayout extends ViewGroup
             ZoomLayout.this.getDrawingRect(viewableRect);
             float offscreenWidth = contentSize.width() - (viewableRect.right - viewableRect.left);
             float offscreenHeight = contentSize.height() - (viewableRect.bottom - viewableRect.top);
-            float maxDx = (contentSize.width() - (contentSize.width() / sx)) / 2 * sx;
-            float maxDy = (contentSize.height() - (contentSize.height() / sx)) / 2 * sx;
-            Log.i("NZL", offscreenWidth + "," + offscreenHeight + "  " + maxDx + "," + maxDy + "  " + totX + "," + totY);
+            float maxDx = (contentSize.width() - (contentSize.width() / sx)) * sx;
+            float maxDy = (contentSize.height() - (contentSize.height() / sx)) * sx;
+            Log.i("NZL", viewableRect.right + "," + "  " + maxDx + "," + "  " + totX + "," + " " + sx);
 
             if (totX > 0 && distanceX > 0)
             {
                 distanceX = 0;
             }
             if (totY > 0 && distanceY > 0)
+            {
+                distanceY = 0;
+            }
+
+            if(totX*-1 > offscreenWidth+maxDx && distanceX < 0)
+            {
+                distanceX = 0;
+            }
+            if(totY*-1 > offscreenHeight+maxDy && distanceY < 0)
             {
                 distanceY = 0;
             }
